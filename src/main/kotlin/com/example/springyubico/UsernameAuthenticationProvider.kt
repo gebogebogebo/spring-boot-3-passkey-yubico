@@ -28,7 +28,6 @@ class UsernameAuthenticationProvider: DaoAuthenticationProvider() {
         authentication: UsernamePasswordAuthenticationToken?
     ) {
         // NOP パスワードのチェックを行わない
-        val a = 0
     }
 
 }

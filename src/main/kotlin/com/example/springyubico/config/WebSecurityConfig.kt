@@ -1,12 +1,6 @@
 package com.example.springyubico.config
 
-import com.example.springyubico.Fido2AuthenticationFilter
-import com.example.springyubico.Fido2AuthenticationProvider
-import com.example.springyubico.PasswordAuthenticationFilter
-import com.example.springyubico.PasswordAuthenticationProvider
-import com.example.springyubico.UsernameAuthenticationFilter
-import com.example.springyubico.UsernameAuthenticationProvider
-import com.example.springyubico.UsernameAuthenticationSuccessHandler
+import com.example.springyubico.*
 import com.example.springyubico.service.SampleUserDetailsService
 import com.example.springyubico.util.SecurityContextUtil
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,7 +11,6 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.web.SecurityFilterChain
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.security.web.context.DelegatingSecurityContextRepository
@@ -38,7 +31,6 @@ class WebSecurityConfig(
         http: HttpSecurity,
         authenticationManager: AuthenticationManager,
     ): SecurityFilterChain {
-//        authenticationManager(http)
 
         http
             .authorizeHttpRequests { authorizeRequests ->
@@ -51,12 +43,19 @@ class WebSecurityConfig(
             .formLogin { formLogin ->
                 formLogin
                     .loginPage("/login").permitAll()
-//                    .successHandler(UsernameAuthenticationSuccessHandler("/password", "/mypage"))
-//                    .failureUrl("/login?error")
             }
-            .addFilterAt(createUsernameAuthenticationFilter(authenticationManager), UsernamePasswordAuthenticationFilter::class.java)
-            .addFilterAt(createPasswordAuthenticationFilter(authenticationManager), UsernamePasswordAuthenticationFilter::class.java)
-            .addFilterAt(createFido2AuthenticationFilter(authenticationManager), UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterAt(
+                createUsernameAuthenticationFilter(authenticationManager),
+                UsernamePasswordAuthenticationFilter::class.java
+            )
+            .addFilterAt(
+                createPasswordAuthenticationFilter(authenticationManager),
+                UsernamePasswordAuthenticationFilter::class.java
+            )
+            .addFilterAt(
+                createFido2AuthenticationFilter(authenticationManager),
+                UsernamePasswordAuthenticationFilter::class.java
+            )
             .csrf { csrf ->
                 csrf.ignoringRequestMatchers(
                     "/authenticate/option",
@@ -71,11 +70,6 @@ class WebSecurityConfig(
 
         return http.build()
     }
-
-//    @Bean
-//    fun authenticationManager(authenticationConfiguration: AuthenticationConfiguration): AuthenticationManager {
-//        return authenticationConfiguration.authenticationManager
-//    }
 
     @Bean
     fun authenticationManager(
@@ -108,31 +102,16 @@ class WebSecurityConfig(
         return createPasswordAuthenticationFilter(authenticationManager)
     }
 
-//    @Bean
-//    fun authenticationFilter(
-//        authenticationManager: AuthenticationManager
-//    ): PasswordAuthenticationFilter {
-//        return createPasswordAuthenticationFilter(authenticationManager)
-//    }
-//
-//    @Bean
-//    fun authenticationFilter2(
-//        authenticationManager: AuthenticationManager
-//    ): Fido2AuthenticationFilter {
-//        return createFido2AuthenticationFilter(authenticationManager)
-//    }
-
     private fun createUsernameAuthenticationFilter(authenticationManager: AuthenticationManager): UsernamePasswordAuthenticationFilter {
         return UsernameAuthenticationFilter("/login", "POST").apply {
             setSecurityContextRepository(
                 DelegatingSecurityContextRepository(
-//                    RequestAttributeSecurityContextRepository(),
                     HttpSessionSecurityContextRepository()
                 )
             )
             setAuthenticationManager(authenticationManager)
             setAuthenticationSuccessHandler(UsernameAuthenticationSuccessHandler("/password", "/mypage"))
-            setAuthenticationFailureHandler(SimpleUrlAuthenticationFailureHandler("/login?error"))
+            setAuthenticationFailureHandler(CustomAuthenticationFailureHandler("/login?error"))
         }
     }
 
@@ -140,13 +119,12 @@ class WebSecurityConfig(
         return PasswordAuthenticationFilter("/password", "POST").apply {
             setSecurityContextRepository(
                 DelegatingSecurityContextRepository(
-//                    RequestAttributeSecurityContextRepository(),
                     HttpSessionSecurityContextRepository()
                 )
             )
             setAuthenticationManager(authenticationManager)
             setAuthenticationSuccessHandler(SimpleUrlAuthenticationSuccessHandler("/mypage"))
-            setAuthenticationFailureHandler(SimpleUrlAuthenticationFailureHandler("/login?error"))
+            setAuthenticationFailureHandler(CustomAuthenticationFailureHandler("/login?error"))
         }
     }
 
@@ -154,14 +132,13 @@ class WebSecurityConfig(
         return Fido2AuthenticationFilter("/login-fido2", "POST").apply {
             setSecurityContextRepository(
                 DelegatingSecurityContextRepository(
-//                    RequestAttributeSecurityContextRepository(),
                     HttpSessionSecurityContextRepository()
                 )
             )
 
             setAuthenticationManager(authenticationManager)
             setAuthenticationSuccessHandler(SimpleUrlAuthenticationSuccessHandler("/mypage"))
-            setAuthenticationFailureHandler(SimpleUrlAuthenticationFailureHandler("/login?error"))
+            setAuthenticationFailureHandler(CustomAuthenticationFailureHandler("/login?error"))
         }
     }
 
