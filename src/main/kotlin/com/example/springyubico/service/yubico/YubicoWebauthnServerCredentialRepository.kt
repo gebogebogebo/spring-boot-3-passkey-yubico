@@ -56,8 +56,14 @@ class YubicoWebauthnServerCredentialRepository(
     }
 
     override fun lookupAll(credentialId: ByteArray): Set<RegisteredCredential> {
-        // There is no needs to lookup credential_id because it is a unique key
-        // TODO 実装もしてみる
-        return emptySet()
+        val credentials = mFidoCredentialRepository.findByCredentialId(credentialId.bytes)
+        return credentials.map {
+            RegisteredCredential.builder()
+                .credentialId(credentialId)
+                .userHandle(ByteArray(it.userInternalId.toByteArray()))
+                .publicKeyCose(ByteArray(it.credentialPublicKey))
+                .signatureCount(it.signCount)
+                .build()
+        }.toSet()
     }
 }
