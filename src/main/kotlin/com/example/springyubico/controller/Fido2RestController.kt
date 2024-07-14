@@ -1,5 +1,6 @@
 package com.example.springyubico.controller
 
+import com.example.springyubico.metrics.CustomMetrics
 import com.example.springyubico.service.FidoCredentialService
 import com.example.springyubico.service.RegisterOption
 import com.example.springyubico.service.Status
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController
 class Fido2RestController(
     private val webauthnServerService: WebauthnServerService,
     private val fidoCredentialService: FidoCredentialService,
+    private val customMetrics: CustomMetrics,
 ) {
     @PostMapping("/register/option")
     fun registerOption(
@@ -66,6 +68,8 @@ class Fido2RestController(
     fun authenticateOption(
         session: HttpSession
     ): ServerPublicKeyCredentialGetOptionsResponse {
+        customMetrics.incrementCounter()
+
         return try {
             val authenticateOption = webauthnServerService.getAuthenticateOption()
             session.setAttribute("authenticateOption", authenticateOption)
