@@ -37,6 +37,7 @@ class WebSecurityConfig(
                 authorizeRequests
                     .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
                     .requestMatchers("/login", "/login-fido2", "/authenticate/option").permitAll()
+                    .requestMatchers("/actuator/prometheus/**").permitAll()
                     .requestMatchers("/password").hasAnyAuthority(SecurityContextUtil.Auth.AUTHENTICATED_USERNAME.value)
                     .requestMatchers("/**").hasRole(SecurityContextUtil.Role.USER.name)
             }
